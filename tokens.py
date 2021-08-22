@@ -1,9 +1,12 @@
 import json
+import os
 import secrets
 import time
 
 import requests
+from logzero import logger
 
+SECRET_NAME = os.environ.get("SECRET_NAME")
 
 def is_token_expired(token_dict: dict) -> bool:
     current_time = int(time.time())
@@ -12,8 +15,6 @@ def is_token_expired(token_dict: dict) -> bool:
 
 
 def get_new_token(old_token_dict: dict) -> dict:
-    old_token_dict.pop("token")
-    old_token_dict.pop("expiration_time")
     query_params = {
         "client_id": old_token_dict["client_id"],
         "client_secret": old_token_dict["client_secret"],
@@ -22,7 +23,8 @@ def get_new_token(old_token_dict: dict) -> dict:
 
     response = requests.post("https://id.twitch.tv/oauth2/token", params=query_params)
     token_dict = format_token_dict({**response.json(), **old_token_dict})
-    secrets.update_secret("twitch_oauth", json.dumps(token_dict))
+    if not secrets.update_secret(SECRET_NAME, json.dumps(token_dict)):
+        logger.error("secret was not properly updated")
     return token_dict
 
 
@@ -40,7 +42,7 @@ def format_token_dict(token_dict: dict) -> dict:
 
 
 def get_valid_token() -> str:
-    token_dict = json.loads(secrets.get_secret("twitch_oauth"))
+    token_dict = json.loads(secrets.get_secret(SECRET_NAME))
 
     if is_token_expired(token_dict):
         token_dict = get_new_token()
