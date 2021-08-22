@@ -8,6 +8,7 @@ from logzero import logger
 
 SECRET_NAME = os.environ.get("SECRET_NAME")
 
+
 def is_token_expired(token_dict: dict) -> bool:
     current_time = int(time.time())
     expiration_time = int(token_dict["expiration_time"])
@@ -22,6 +23,7 @@ def get_new_token(old_token_dict: dict) -> dict:
     }
 
     response = requests.post("https://id.twitch.tv/oauth2/token", params=query_params)
+    response.raise_for_status()
     token_dict = format_token_dict({**response.json(), **old_token_dict})
     if not secrets.update_secret(SECRET_NAME, json.dumps(token_dict)):
         logger.error("secret was not properly updated")
