@@ -3,10 +3,11 @@ from botocore.exceptions import ClientError
 from logzero import logger
 from typing import Union
 
-client = boto3.client("secretsmanager")
 
 def get_secret(secret_name: str) -> Union[str, bytes]:
     try:
+        # client is init here for easier mocking during testing
+        client = boto3.client("secretsmanager")
         get_secret_value_response = client.get_secret_value(
             SecretId=secret_name
         )
@@ -34,8 +35,10 @@ def get_secret(secret_name: str) -> Union[str, bytes]:
         return secret_data
 
 
+# the boolean returns to show if the operation was successful
 def update_secret(secret_name: str, secret_string: str) -> bool:
     try:
+        client = boto3.client("secretsmanager")
         client.update_secret(
             SecretId=secret_name,
             SecretString=secret_string
