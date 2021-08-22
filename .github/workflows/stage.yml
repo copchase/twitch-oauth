@@ -28,7 +28,7 @@ jobs:
       - name: Package
         run: |
           pip3 install -r requirements.txt -t .
-          zip -8 -r twitch-oauth.zip . -x ".git*"
+          git archive --format=zip -o twitch-oauth.zip HEAD
 
       - name: Setup AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
