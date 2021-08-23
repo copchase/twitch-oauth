@@ -47,5 +47,5 @@ def get_valid_token() -> str:
     token_dict = json.loads(secrets.get_secret(SECRET_NAME))
 
     if is_token_expired(token_dict):
-        token_dict = get_new_token()
+        token_dict = get_new_token(token_dict)
     return token_dict["token"]
